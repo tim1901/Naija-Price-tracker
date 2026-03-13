@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NaijaPrice — Find the Best Supermarket Deals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #1a6b3c;
+      --green-light: #e8f5ee;
+      --green-mid: #2d9e5f;
+      --white: #ffffff;
+      --off: #f7f9f7;
+      --ink: #0f1f17;
+      --muted: #5a7265;
+      --border: rgba(15,31,23,0.1);
+      --gold: #e8a020;
+      --gold-light: #fef6e4;
+      --red: #d63c2f;
+      --radius: 12px;
+    }
+
+    body {
+      font-family: 'Instrument Sans', sans-serif;
+      background: var(--off);
+      color: var(--ink);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--green);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-badge {
+      background: var(--gold);
+      color: var(--ink);
+      font-size: 0.6rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-family: 'Instrument Sans', sans-serif;
+    }
+
+    .header-stats {
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.7);
+      display: flex;
+      gap: 20px;
+    }
+
+    .header-stats span { color: white; font-weight: 600; }
+
+    /* ── HERO SEARCH ── */
+    .hero {
+      background: var(--green);
+      padding: 48px 32px 64px;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 800;
+      color: white;
+      margin-bottom: 8px;
+      line-height: 1.15;
+    }
+
+    .hero p {
+      color: rgba(255,255,255,0.75);
+      font-size: 1rem;
+      margin-bottom: 32px;
+    }
+
+    .search-bar {
+      display: flex;
+      max-width: 580px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 50px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+
+    .search-bar input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 16px 24px;
+      font-size: 1rem;
+      font-family: 'Instrument Sans', sans-serif;
+      color: var(--ink);
+      background: transparent;
+    }
+
+    .search-bar button {
+      background: var(--gold);
+      border: none;
+      padding: 16px 28px;
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--ink);
+      cursor: pointer;
+      border-radius: 0 50px 50px 0;
+      transition: background 0.2s;
+      white-space: nowrap;
+    }
+
+    .search-bar button:hover { background: #d4901a; }
+
+    /* Autocomplete */
+    .search-wrap { position: relative; max-width: 580px; margin: 0 auto; }
+
+    .autocomplete {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0; right: 0;
+      background: white;
+      border-radius: var(--radius);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      overflow: hidden;
+      z-index: 50;
+      display: none;
+    }
+
+    .autocomplete.show { display: block; }
+
+    .autocomplete-item {
+      padding: 12px 20px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: var(--ink);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+
+    .autocomplete-item:last-child { border-bottom: none; }
+    .autocomplete-item:hover { background: var(--green-light); }
+
+    /* ── TABS ── */
+    .tabs {
+      display: flex;
+      max-width: 900px;
+      margin: -28px auto 0;
+      padding: 0 24px;
+      gap: 8px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .tab {
+      background: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: var(--radius) var(--radius) 0 0;
+      font-family: 'Instrument Sans', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 -2px 8px rgba(0,0,0,0.06);
+    }
+
+    .tab.active { background: var(--off); color: var(--green); border-bottom: 2px solid var(--green); }
+
+    /* ── MAIN ── */
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    .panel { display: none; padding-top: 32px; }
+    .panel.active { display: block; }
+
+    /* ── SEARCH RESULTS ── */
+    .results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .results-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
+    .results-count {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .result-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 16px;
+      border: 1px solid var(--border);
+      animation: fadeUp 0.3s ease both;
+    }
+
+    .result-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .item-name {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+
+    .saving-badge {
+      background: var(--gold-light);
+      color: var(--gold);
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid rgba(232,160,32,0.3);
+    }
+
+    .price-rows { display: flex; flex-direction: column; gap: 8px; }
+
+    .price-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: var(--off);
+      transition: background 0.15s;
+    }
+
+    .price-row.cheapest {
+      background: var(--green-light);
+      border: 1px solid rgba(26,107,60,0.15);
+    }
+
+    .cheapest-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      background: var(--green);
+      color: white;
+      padding: 2px 8px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      flex-shrink: 0;
+    }
+
+    .supermarket-name {
+      flex: 1;
+      font-weight: 500;
+      font-size: 0.9rem;
+    }
+
+    .price-amount {
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--ink);
+    }
+
+    .price-row.cheapest .price-amount { color: var(--green); }
+
+    .price-date {
+      font-size: 0.72rem;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    .price-bar-wrap {
+      flex-shrink: 0;
+      width: 80px;
+    }
+
+    .price-bar {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .price-bar-fill {
+      height: 100%;
+      background: var(--green-mid);
+      border-radius: 2px;
+      transition: width 0.5s ease;
+    }
+
+    .price-row.cheapest .price-bar-fill { background: var(--green); }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 64px 24px;
+      color: var(--muted);
+    }
+
+    .empty-icon { font-size: 3rem; margin-bottom: 16px; }
+
+    .empty-state h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .empty-state p { font-size: 0.9rem; line-height: 1.6; }
+
+    /* ── UPLOAD PANEL ── */
+    .upload-intro {
+      background: white;
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border);
+    }
+
+    .upload-intro h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .upload-intro p {
+      font-size: 0.88rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .steps-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .step-box {
+      background: var(--green-light);
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .step-num {
+      width: 28px; height: 28px;
+      background: var(--green);
+      color: white;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin: 0 auto 8px;
+    }
+
+    .step-box p { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+
+    /* Drop zone */
+    .drop-zone {
+      border: 2px dashed rgba(26,107,60,0.3);
+      border-radius: var(--radius);
+      padding: 48px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+      position: relative;
+    }
+
+    .drop-zone:hover, .drop-zone.dragover {
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+
+    .drop-zone input[type=file] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+
+    .drop-icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+    .drop-zone h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .drop-zone p { font-size: 0.83rem; color: var(--muted); }
+
+    /* Preview */
+    #preview-wrap {
+      display: none;
+      background: white;
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 1px solid var(--border);
+      margin-top: 16px;
+    }
+
+    #preview-img {
+      width: 100%;
+      max-height: 280px;
+      object-fit: contain;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .upload-btn {
+      width: 100%;
+      background: var(--green);
+      color: white;
+      border: none;
+      padding: 16px;
+      border-radius: var(--radius);
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 12px;
+    }
+
+    .upload-btn:hover { background: #155530; }
+    .upload-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Processing */
+    #processing {
+      display: none;
+      text-align: center;
+      padding: 48px;
+      background: white;
+      border-radius: var(--radius);
+      margin-top: 16px;
+    }
+
+    .spin-ring {
+      width: 48px; height: 48px;
+      border: 3px solid var(--border);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    /* Success */
+    #upload-success {
+      display: none;
+      background: var(--green-light);
+      border: 1px solid rgba(26,107,60,0.2);
+      border-radius: var(--radius);
+      padding: 28px;
+      text-align: center;
+      margin-top: 16px;
+    }
+
+    #upload-success h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+
+    .success-items {
+      margin-top: 16px;
+      text-align: left;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .success-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(26,107,60,0.1);
+      font-size: 0.85rem;
+    }
+
+    .success-item:last-child { border-bottom: none; }
+
+    /* ── COMMUNITY PANEL ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: var(--radius);
+      padding: 20px;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--green);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-label { font-size: 0.78rem; color: var(--muted); }
+
+    .recent-uploads { background: white; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+
+    .recent-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'Syne', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .recent-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+
+    .recent-row:last-child { border-bottom: none; }
+
+    .recent-super {
+      font-weight: 600;
+      color: var(--green);
+    }
+
+    /* Loading skeleton */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.2s infinite;
+      border-radius: 6px;
+      height: 16px;
+    }
+
+    @keyframes shimmer { to { background-position: -200% 0; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Notification toast */
+    #toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--ink);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 50px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      z-index: 999;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+    }
+
+    #toast.show { transform: translateX(-50%) translateY(0); }
+    #toast.error { background: var(--red); }
+
+    @media (max-width: 600px) {
+      header { padding: 0 16px; }
+      .header-stats { display: none; }
+      .hero { padding: 32px 16px 48px; }
+      .tabs { padding: 0 16px; }
+      main { padding: 0 16px 80px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .steps-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    NaijaPrice
+    <span class="logo-badge">Beta</span>
+  </div>
+  <div class="header-stats" id="header-stats">
+    <div><span id="stat-items">—</span> items tracked</div>
+    <div><span id="stat-receipts">—</span> receipts uploaded</div>
+  </div>
+</header>
+
+<!-- HERO SEARCH -->
+<div class="hero">
+  <h1>Find the cheapest price<br/>across Nigerian supermarkets</h1>
+  <p>Community-powered. Real receipts. Real savings.</p>
+  <div class="search-wrap">
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Search an item e.g. tomatoes, indomie, peak milk…" autocomplete="off"/>
+      <button onclick="doSearch()">Search</button>
+    </div>
+    <div class="autocomplete" id="autocomplete"></div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab active" onclick="showPanel('search-panel', this)">Price Search</button>
+  <button class="tab" onclick="showPanel('upload-panel', this)">Upload Receipt</button>
+  <button class="tab" onclick="showPanel('community-panel', this); loadStats()">Community</button>
+</div>
+
+<main>
+
+  <!-- SEARCH PANEL -->
+  <div class="panel active" id="search-panel">
+    <div id="search-results">
+      <div class="empty-state">
+        <div class="empty-icon">🛒</div>
+        <h3>Search for any item above</h3>
+        <p>Type a product name to compare prices across Spar, Justrite, Marketplace, Hubmart, PriceMart and Finrel.<br/><br/>Don't see your item? Upload a receipt to add it!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- UPLOAD PANEL -->
+  <div class="panel" id="upload-panel">
+    <div class="upload-intro">
+      <h2>Help your community save money 🙌</h2>
+      <p>Upload a photo of your supermarket receipt and our AI will read the prices automatically. Your contribution helps everyone find the best deals.</p>
+      <div class="steps-row">
+        <div class="step-box">
+          <div class="step-num">1</div>
+          <p>Take a clear photo of your receipt</p>
+        </div>
+        <div class="step-box">
+          <div class="step-num">2</div>
+          <p>Upload it here — AI reads items & prices</p>
+        </div>
+        <div class="step-box">
+          <div class="step-num">3</div>
+          <p>Prices go live for everyone to compare</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="drop-zone" id="drop-zone">
+      <input type="file" accept="image/*" id="file-input" onchange="handleFile(this.files[0])"/>
+      <div class="drop-icon">📄</div>
+      <h3>Drop your receipt here</h3>
+      <p>or click to choose a photo — JPG, PNG, HEIC supported</p>
+    </div>
+
+    <div id="preview-wrap">
+      <img id="preview-img" src="" alt="Receipt preview"/>
+      <button class="upload-btn" onclick="uploadReceipt()" id="upload-btn">
+        Read receipt & add prices →
+      </button>
+    </div>
+
+    <div id="processing">
+      <div class="spin-ring"></div>
+      <div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;margin-bottom:6px">Reading your receipt…</div>
+      <div style="font-size:0.85rem;color:var(--muted)">AI is extracting items and prices</div>
+    </div>
+
+    <div id="upload-success">
+      <div style="font-size:2rem;margin-bottom:8px">✅</div>
+      <h3 id="success-title">Receipt added successfully!</h3>
+      <p id="success-sub" style="font-size:0.85rem;color:var(--muted)"></p>
+      <div class="success-items" id="success-items"></div>
+      <button class="upload-btn" onclick="resetUpload()" style="margin-top:16px;background:var(--green)">
+        Upload another receipt
+      </button>
+    </div>
+  </div>
+
+  <!-- COMMUNITY PANEL -->
+  <div class="panel" id="community-panel">
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-num" id="c-items">—</div>
+        <div class="stat-label">Items tracked</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="c-receipts">—</div>
+        <div class="stat-label">Receipts uploaded</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="c-stores">—</div>
+        <div class="stat-label">Supermarkets</div>
+      </div>
+    </div>
+
+    <div class="recent-uploads">
+      <div class="recent-header">Recent uploads</div>
+      <div id="recent-list">
+        <div style="padding:20px;text-align:center;color:var(--muted);font-size:0.85rem">Loading…</div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<div id="toast"></div>
+
+<script>
+  let allItemNames = [];
+  let currentFile = null;
+  let currentBase64 = null;
+  let currentMime = null;
+
+  // ── Load header stats & autocomplete data on load ─────────────
+  async function loadHeaderStats() {
+    try {
+      const res = await fetch('/api/search');
+      const data = await res.json();
+      document.getElementById('stat-items').textContent = data.totalItems || 0;
+      document.getElementById('stat-receipts').textContent = data.totalReceipts || 0;
+      allItemNames = data.itemNames || [];
+    } catch {}
+  }
+
+  loadHeaderStats();
+
+  // ── Autocomplete ──────────────────────────────────────────────
+  const searchInput = document.getElementById('search-input');
+  const autocompleteEl = document.getElementById('autocomplete');
+
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.toLowerCase().trim();
+    if (!q || q.length < 2) { autocompleteEl.classList.remove('show'); return; }
+    const matches = allItemNames.filter(n => n.toLowerCase().includes(q)).slice(0, 6);
+    if (!matches.length) { autocompleteEl.classList.remove('show'); return; }
+    autocompleteEl.innerHTML = matches.map(m =>
+      `<div class="autocomplete-item" onclick="selectItem('${m}')">${m}</div>`
+    ).join('');
+    autocompleteEl.classList.add('show');
+  });
+
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { autocompleteEl.classList.remove('show'); doSearch(); }
+  });
+
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.search-wrap')) autocompleteEl.classList.remove('show');
+  });
+
+  function selectItem(name) {
+    searchInput.value = name;
+    autocompleteEl.classList.remove('show');
+    doSearch();
+  }
+
+  // ── Search ────────────────────────────────────────────────────
+  async function doSearch() {
+    const q = searchInput.value.trim();
+    if (!q) return;
+
+    showPanel('search-panel', document.querySelector('.tab'));
+    document.querySelectorAll('.tab')[0].click();
+
+    const container = document.getElementById('search-results');
+    container.innerHTML = '<div style="padding:32px;text-align:center"><div class="skeleton" style="width:60%;margin:0 auto 12px"></div><div class="skeleton" style="width:40%;margin:0 auto"></div></div>';
+
+    try {
+      const res = await fetch('/api/search?q=' + encodeURIComponent(q));
+      const data = await res.json();
+
+      if (data.error) { container.innerHTML = errorState(data.error); return; }
+      if (!data.results || data.results.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <h3>No prices found for "${q}"</h3>
+            <p>${data.message || 'Be the first to upload a receipt with this item!'}</p>
+          </div>`;
+        return;
+      }
+
+      renderResults(data.results, q);
+    } catch (err) {
+      container.innerHTML = errorState(err.message);
+    }
+  }
+
+  function renderResults(results, q) {
+    const container = document.getElementById('search-results');
+    const total = results.reduce((sum, r) => sum + r.priceCount, 0);
+
+    let html = `<div class="results-header">
+      <div class="results-title">Results for "${q}"</div>
+      <div class="results-count">${results.length} item${results.length !== 1 ? 's' : ''} · ${total} price${total !== 1 ? 's' : ''}</div>
+    </div>`;
+
+    for (const r of results) {
+      const maxPrice = Math.max(...r.prices.map(p => p.price));
+      html += `<div class="result-card">
+        <div class="result-card-header">
+          <div class="item-name">${r.name}</div>
+          ${r.saving > 0 ? `<div class="saving-badge">Save up to ₦${r.saving.toLocaleString()}</div>` : ''}
+        </div>
+        <div class="price-rows">`;
+
+      for (const p of r.prices) {
+        const isCheapest = p.supermarket === r.cheapest.supermarket;
+        const barPct = maxPrice > 0 ? Math.round((p.price / maxPrice) * 100) : 100;
+        html += `<div class="price-row ${isCheapest ? 'cheapest' : ''}">
+          ${isCheapest ? '<span class="cheapest-tag">Cheapest</span>' : ''}
+          <div class="supermarket-name">${p.supermarket}</div>
+          <div class="price-bar-wrap">
+            <div class="price-bar"><div class="price-bar-fill" style="width:${barPct}%"></div></div>
+          </div>
+          <div class="price-amount">₦${p.price.toLocaleString()}</div>
+          <div class="price-date">${formatDate(p.date)}</div>
+        </div>`;
+      }
+
+      html += `</div></div>`;
+    }
+
+    container.innerHTML = html;
+  }
+
+  // ── File upload ───────────────────────────────────────────────
+  function handleFile(file) {
+    if (!file) return;
+    currentFile = file;
+    currentMime = file.type || 'image/jpeg';
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      currentBase64 = e.target.result.split(',')[1];
+      document.getElementById('preview-img').src = e.target.result;
+      document.getElementById('preview-wrap').style.display = 'block';
+      document.getElementById('upload-success').style.display = 'none';
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Drag and drop
+  const dropZone = document.getElementById('drop-zone');
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+  dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) handleFile(file);
+  });
+
+  async function uploadReceipt() {
+    if (!currentBase64) return;
+
+    document.getElementById('preview-wrap').style.display = 'none';
+    document.getElementById('drop-zone').style.display = 'none';
+    document.getElementById('processing').style.display = 'block';
+    document.getElementById('upload-btn').disabled = true;
+
+    try {
+      const res = await fetch('/api/upload-receipt', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: currentBase64, mimeType: currentMime })
+      });
+
+      const data = await res.json();
+      document.getElementById('processing').style.display = 'none';
+
+      if (data.error) {
+        document.getElementById('drop-zone').style.display = 'block';
+        document.getElementById('preview-wrap').style.display = 'block';
+        document.getElementById('upload-btn').disabled = false;
+        showToast(data.error, true);
+        return;
+      }
+
+      // Show success
+      document.getElementById('success-title').textContent = `${data.itemsAdded} items added from ${data.supermarket}!`;
+      document.getElementById('success-sub').textContent = `Receipt date: ${formatDate(data.date)} · Thank you for contributing!`;
+
+      const itemsHtml = data.items.map(i =>
+        `<div class="success-item">
+          <span style="text-transform:capitalize">${i.name}</span>
+          <span style="font-weight:600">₦${i.price.toLocaleString()}</span>
+        </div>`
+      ).join('');
+      document.getElementById('success-items').innerHTML = itemsHtml;
+      document.getElementById('upload-success').style.display = 'block';
+
+      // Refresh stats
+      loadHeaderStats();
+      showToast(`✓ ${data.itemsAdded} prices added from ${data.supermarket}`);
+
+    } catch (err) {
+      document.getElementById('processing').style.display = 'none';
+      document.getElementById('drop-zone').style.display = 'block';
+      document.getElementById('preview-wrap').style.display = 'block';
+      document.getElementById('upload-btn').disabled = false;
+      showToast('Upload failed: ' + err.message, true);
+    }
+  }
+
+  function resetUpload() {
+    currentFile = null; currentBase64 = null; currentMime = null;
+    document.getElementById('drop-zone').style.display = 'block';
+    document.getElementById('preview-wrap').style.display = 'none';
+    document.getElementById('upload-success').style.display = 'none';
+    document.getElementById('upload-btn').disabled = false;
+    document.getElementById('file-input').value = '';
+  }
+
+  // ── Community stats ───────────────────────────────────────────
+  async function loadStats() {
+    try {
+      const res = await fetch('/api/search');
+      const data = await res.json();
+
+      document.getElementById('c-items').textContent = data.totalItems || 0;
+      document.getElementById('c-receipts').textContent = data.totalReceipts || 0;
+      document.getElementById('c-stores').textContent = (data.supermarkets || []).length;
+
+      const recent = data.recentReceipts || [];
+      if (!recent.length) {
+        document.getElementById('recent-list').innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:0.85rem">No receipts yet — be the first!</div>';
+        return;
+      }
+
+      document.getElementById('recent-list').innerHTML = recent.map(r => `
+        <div class="recent-row">
+          <span class="recent-super">${r.supermarket}</span>
+          <span style="color:var(--muted);font-size:0.8rem">${r.itemCount} items</span>
+          <span style="color:var(--muted);font-size:0.78rem">${formatDate(r.date)}</span>
+        </div>`).join('');
+    } catch {}
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────
+  function showPanel(id, btn) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if (btn) btn.classList.add('active');
+  }
+
+  function formatDate(d) {
+    if (!d) return '';
+    try {
+      return new Date(d).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' });
+    } catch { return d; }
+  }
+
+  function errorState(msg) {
+    return `<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Something went wrong</h3><p>${msg}</p></div>`;
+  }
+
+  let toastTimer;
+  function showToast(msg, isError = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show' + (isError ? ' error' : '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.className = '', 3500);
+  }
+</script>
+</body>
+</html>
